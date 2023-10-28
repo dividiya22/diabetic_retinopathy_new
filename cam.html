@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>WEBCAM</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <style>
+      body {
+         background-image: url('https://img.freepik.com/free-vector/prickly-juniper-branch-beige-gray-minimal-background_53876-113047.jpg?w=1060&t=st=1698412473~exp=1698413073~hmac=d4be7436b88f3c3f9da4397951d7138324300bd9a53028556d08bbb27daac13e');
+         background-size: cover;
+         background-repeat: no-repeat;
+         background-attachment: fixed;
+         font-family: Arial, sans-serif;
+         text-align: center;
+      }
+      h1 {
+         color: #3E4C59;
+      }
+      #videoCam {
+         max-width: 100%;
+         height: auto;
+         border: 3px solid #ccc;
+         background: black;
+      }
+      .button {
+         display: inline-block;
+         margin: 10px;
+         padding: 10px 20px;
+         cursor: pointer;
+         background-color: #3E4C59;
+         color: #FFFFFF;
+         font-weight: bold;
+         border: none;
+         border-radius: 5px;
+         transition: background-color 0.3s, color 0.3s;
+      }
+      .button:hover {
+         background-color: #647C90;
+      }
+      #imageContainer {
+         margin: 20px auto;
+         max-width: 80%;
+      }
+      #imagePreview {
+         max-width: 100%;
+         border: 5px solid #3E4C59;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+      #imageContainer.no-image {
+         display: none;
+      }
+   </style>
+</head>
+<body>
+   <h1>WEBCAM</h1>
+   <br/>
+   <video id="videoCam" playsinline autoplay></video>
+   <br/><br/>
+   <button class="button" id="startBtn" onclick="openCam()">Open Camera</button>
+   <button class="button" id="captureBtn" onclick="captureImage()">Capture</button>
+   <!-- Add the "Select Image" button and image preview -->
+   <input type="file" accept="image/*" id="selectImage" style="display: none;">
+   <label for="selectImage" class="button">Select Image</label>
+   <br><br>
+   <div id="imageContainer" class="no-image">
+      <img id="imagePreview" src="" alt="Selected Image">
+   </div>
+
+   <!-- Add the "Run" button for processing the selected image -->
+   <button class="button" id="runButton" onclick="processSelectedImage()">Run</button>
+
+   <script>
+    let videoStream = null;
+    let videoTrack = null;
+
+    function openCam() {
+       let allMediaDevices = navigator.mediaDevices;
+       if (!allMediaDevices || !allMediaDevices.getUserMedia) {
+          console.log("getUserMedia() not supported.");
+          return;
+       }
+       allMediaDevices.getUserMedia({
+          video: true
+       })
+       .then(function(vidStream) {
+          videoStream = vidStream;
+          var video = document.getElementById('videoCam');
+          videoTrack = vidStream.getVideoTracks()[0];
+          if ("srcObject" in video) {
+             video.srcObject = vidStream;
+          } else {
+             video.src = window.URL.createObjectURL(vidStream);
+          }
+          video.onloadedmetadata = function(e) {
+             video.play();
+          };
+       })
+       .catch(function(e) {
+          console.log(e.name + ": " + e.message);
+       });
+    }
+
+    function captureImage() {
+       if (videoStream && videoTrack) {
+          const canvas = document.createElement('canvas');
+          canvas.width = videoTrack.getSettings().width;
+          canvas.height = videoTrack.getSettings().height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(document.getElementById('videoCam'), 0, 0, canvas.width, canvas.height);
+          const imgDataUrl = canvas.toDataURL('image/png');
+
+          // Create a download link for the captured image
+          const a = document.createElement('a');
+          a.href = imgDataUrl;
+          a.download = 'webcam_capture.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+       }
+    }
+
+    // Function to handle image selection from the file input
+    document.getElementById('selectImage').addEventListener('change', function(e) {
+       const selectedImage = e.target.files[0];
+       if (selectedImage) {
+          const imagePreview = document.getElementById('imagePreview');
+          imagePreview.src = URL.createObjectURL(selectedImage);
+          const imageContainer = document.getElementById('imageContainer');
+          imageContainer.classList.remove('no-image');
+       }
+    });
+
+    // Function to process the selected image
+    function processSelectedImage() {
+       const selectedImage = document.getElementById('imagePreview');
+       if (selectedImage.src) {
+          // Placeholder for image processing logic
+          // You can add your image processing code here
+          
+       } else {
+          alert("Please select an image to process.");
+       }
+    }
+   </script>
+</body>
+</html>
